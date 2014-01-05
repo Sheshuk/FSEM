@@ -1,0 +1,40 @@
+#!/bin/bash
+
+helpme(){
+	echo "------------------------------------------------------------"
+	echo "| FSEM - Fluka Simulation for Emulsion experiments by ASh  |"
+	echo "| This script runs fluka simulation in current directory   |"
+	echo "| (it will be used to store temporary FLUKA files)         |"
+	echo "| and writes output to given dir                           |"
+	echo "------------------------------------------------------------"
+  	echo "** usage ** : fsem INPUT_FILE OUTPUT_DIR BEAMFILE_DIR"
+  	echo " - INPUT_FILE: FULKA input file (for example BRICK.inp)"
+  	echo " - OPTPUT_DIR: Directory for output files"
+  	echo " - BEAMFILE_DIR: Directory with beamfiles (if specified in .inp)"
+}
+
+fullpath(){
+  	echo $(readlink -f $1)
+}
+
+
+
+if [ "$#" -lt 2 ]; then
+	helpme
+	exit
+fi
+
+echo "Starting FSEM run"
+
+#export FLU_OUT=$2
+export FLU_OUT=`fullpath $2`
+export BEAMFILES=`fullpath $3`
+export TXT_OUT=11100
+
+echo "input file= `fullpath $1`"
+echo "output dir= $FLU_OUT"
+echo "beamfile dir= $BEAMFILES"
+
+$FLUPRO/flutil/rfluka -e $(fullpath $BRICKFLU_DIR)/brick.exe -M 1 `fullpath $1`
+echo Done!
+
