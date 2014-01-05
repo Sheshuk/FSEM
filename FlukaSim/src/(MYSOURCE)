@@ -1,0 +1,30 @@
+*$ CREATE MYSOURCE.ADD
+*COPY MYSOURCE
+      INTEGER*4 NEV_CURR
+      INTEGER*4 NVTX_CURR
+      INTEGER*4 NVTX_TOT
+      INTEGER*4 NTRK_CURR
+      INTEGER*4 NTRK_TOT
+      INTEGER*4 NTRK_VTX  !tracks in vertex
+      INTEGER*4 EV_TYPE(2)
+      INTEGER*4 GC2FC(49) !to convert G3 codes to FLUKA
+      REAL*8 EV_ETOT
+      REAL*8 EV_TX
+      REAL*8 EV_TY
+      REAL*8 EV_X
+      REAL*8 EV_Y
+      REAL*8 EV_Z
+      REAL*8 VCURR_X
+      REAL*8 VCURR_Y
+      REAL*8 VCURR_Z
+
+      COMMON / MYSOURCE / NEV_CURR, NTRK_CURR,  
+     &     NTRK_TOT,NVTX_CURR, NVTX_TOT,NTRK_VTX,
+     &     EV_TX,EV_TY, EV_ETOT, 
+     &     EV_X,EV_Y,EV_Z,
+     &     VCURR_X,VCURR_Y,VCURR_Z,
+     
+     &     EV_TYPE,
+     &     GC2FC
+      SAVE   / MYSOURCE /
+

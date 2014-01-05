@@ -1,0 +1,20 @@
+*$ CREATE MYSTCK.ADD
+*COPY MYSTCK
+      PARAMETER ( MXSP = 10 )  !maximum number of stopping points to store
+      INTEGER NIDMAX
+      INTEGER NUM_EVT
+      INTEGER NVTS_MY
+      INTEGER LVTXGUT
+      INTEGER NUM_TRK
+      INTEGER*4 NSTP             !currently stored number of stopping points
+      INTEGER ISTP(MXSP)
+      REAL*8 XSTP(MXSP)
+      REAL*8 YSTP(MXSP)
+      REAL*8 ZSTP(MXSP)
+      REAL*8 DIST(MXSP)
+      COMMON / MYSTCK / NIDMAX,NSTP,
+     &                 NUM_EVT,NVTS_MY,
+     &                 XSTP,YSTP,ZSTP,ISTP,
+     &                 DIST,
+     &                 LVTXGUT,NUM_TRK
+      SAVE   / MYSTCK /

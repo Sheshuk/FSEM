@@ -1,0 +1,7 @@
+*$ CREATE MYOUT.ADD
+*COPY MYOUT
+      PARAMETER ( MXOUTP = 5)  !number of output levels
+      LOGICAL OUT_BIN(MXOUTP)
+      LOGICAL OUT_TXT(MXOUTP)
+      COMMON / MYOUT / OUT_BIN,OUT_TXT
+      SAVE   / MYOUT /

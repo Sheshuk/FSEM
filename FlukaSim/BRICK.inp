@@ -1,0 +1,223 @@
+DEFAULTS                                                              PRECISIO
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+TITLE
+Simulation of PIONS interaction in 1mm LEAD plate for OPERA experiment
+USRICALL
+
+* Geometry definition:
+* "plate": OPERA plate;   1 em plate;
+* "brick": OPERA brick;  57 em plates;
+* "brick4":OPERA brick;  5 em plates;
+* "brick2":OPERA brick;  3 em plates;
+* "unzen": Unzen triplets; 3 em plates;
+
+#define _plate
+*#define _brick
+*#define _brick4
+*#define _brick2
+*#define _unzen
+
+*#define _hadron
+*#define _source
+
+
+* this is config for 1 GeV muons:
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+* BEAM               1                 0.0       0.1       0.1       1.0MUON-
+* BEAMPOS          0.0       0.0      -0.5        .1        .1
+
+* this is config for 250 KeV positrons:
+* BEAM        -0.00025         0     7000.        5.        5.          POSITRON
+* BEAMPOS            0         0         0         0         0
+
+* BEAM        -0.00100         0     7000.        0.        0.          POSITRON
+* BEAMPOS            0     0.001    0.8720         0         0
+*BEAMPOS            0     0.001    3.6420         0         0
+
+*neutron beam
+BEAM          0.0141       0.0      10.0       0.0        10          PROTON
+BEAMPOS       -0.3         0.0     0.003       1.0       0.0
+
+
+* this is config for 4GeV beamtest at CERN (NA):
+*BEAM             4.0                -7.6      12.5        10          PION-
+*BEAMPOS          0.0       0.0     -3.72  -0.05143   0.02313
+
+* this is config for 6GeV beamtest at CERN:
+*BEAM             6.0                -7.6      12.5        10          PION-
+*BEAMPOS          0.0       0.0     -3.72  -0.05143   0.02313
+
+*BEAM             6.0                -7.6       0.5       0.5          PION-
+*BEAMPOS          0.0       0.0         0  -0.05143   0.02313
+
+
+* this is config for 10GeV beamtest at CERN: TX=0.03542 (0.005039) TY=-0.01686 (0.00523)
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+* BEAM            10.0                -5.2     6.255       5.0          PION-
+* BEAMPOS            0         0     -0.01   0.03542  -0.01686
+
+* this is config for 4GeV beamtest at CERN: TX=0.03735 (0.007956) TY=-0.01574 (0.0081)
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+*BEAM             4.0                -8.0      12.5        10          PION-
+*BEAMPOS            0         0     -3.72   0.03735  -0.01574
+
+* this is config for 2GeV beamtest at CERN: TX=0.03482 (0.01349) TY=-0.01832 (0.01324)
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+* BEAM             2.0               -1.35       1.0       1.0          PION-
+* BEAMPOS            0         0     -0.01   0.03482  -0.01832
+
+#ifdef _source
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+BEAM           200.0                -1.0      12.5      10.0       1.0PROTON
+BEAMPOS          0.0       0.0       0.0       0.0       0.0
+* -------------------------------------------------------
+* for SOURCE datacard
+* -------------------------------------------------------
+* WHAT(1) describes generation of XY primary position.
+* Center of beam (X0 Y0) is taken from BEAMPOS datacard.
+* Spread (or gaussian sigma) (DX DY) from BEAM datacard.
+*  -    WHAT(1)=0 : no spread;
+*  -    WHAT(1)=1 : uniform [X-DX,X+DX],[Y-DY,Y+DY]
+*  -    WHAT(1)=2 : gaussian with sigmas DX and DY
+* WHAT(2)=Zmin
+* WHAT(3)=Zmax
+* Z is taken uniform [Zmin, Zmax]
+* -------------------------------------------------------
+#define _beam
+
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+*SOURCE            1.      0.00      7.31                              numucc1
+SOURCE            1.      0.00     0.098                              NC0
+*SOURCE            1. -3.721200  3.436901                              numunc1m
+
+
+#endif
+
+
+* ..+....     --------PHYSICS---------
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+
+*EVENTYPE                              2.                              DPMJET
+MUPHOTON          1.                          LEAD  EMULSION        1.
+PHYSICS           3.                                                  EVAPORAT
+PHYSICS           1.                                                  CHARMDEC
+PHYSICS        1000.     1000.     1000.     1000.     1000.     1000.PEATHRES
+PART-THR     1.0E-18         1        20         1       0.0       1.0
+IONTRANS          -2
+*IONTRANS           1
+MULSOPT      500051.       -3.       -2.      LEAD  EMULSION
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+EMFCUT          0.03       0.1       1.0      LEAD  EMULSION          PROD-CUT 
+#ifdef _hadron
+DISCARD     ELECTRON  POSITRON    PHOTON     MUON+     MUON-   
+#endif
+*             ------------- MATERIALS ----------------
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+MATERIAL                           2.709                              EMULSION
+MAT-PROP          1.                      BLCKHOLE  @LASTMAT          USERDIRE
+
+#ifdef false
+COMPOUND        .452    SILVER    0.3291   BROMINE     .0136    IODINEEMULSION
+COMPOUND        .065    CARBON     .0156  NITROGEN      .043    OXYGENEMULSION
+COMPOUND       .0712    SULFUR                                        EMULSION
+#endif
+
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+COMPOUND     -0.3834    SILVER   -0.2786   BROMINE   -0.0081    IODINEEMULSION
+COMPOUND       -0.13    CARBON   -0.0481  NITROGEN   -0.1243    OXYGENEMULSION
+COMPOUND      -0.024  HYDROGEN   -0.0009    SULFUR   -0.0008   SILICONEMULSION
+
+MATERIAL         35.    79.904  .0070722                              BROMINE
+MATERIAL         53. 126.90447      4.93                              IODINE
+MATERIAL         16.    32.066       2.0                              SULFUR
+* Polystyrene (C8_H8)n
+MATERIAL                            1.06                              POLYSTYR
+COMPOUND    -.077418  HYDROGEN  -.922582    CARBON                    POLYSTYR
+#if 0
+MAT-PROP                            68.7  POLYSTYR
+#endif
+
+
+ASSIGNMA    BLCKHOLE    BkHole
+ASSIGNMA    BLCKHOLE    Vacuum
+*ASSIGNMA      VACUUM    Vacuum
+
+#ifdef _plate
+* loading plate geometry
+GEOBEGIN                             21.                              COMBNAME
+plate.geo
+GEOEND
+#endif
+#ifdef _brick
+* loading brick geometry
+GEOBEGIN                             21.                              COMBNAME
+brick.geo
+GEOEND
+#endif
+
+#ifdef _brick4
+* loading brick geometry
+GEOBEGIN                             21.                              COMBNAME
+brick4pl.geo
+GEOEND
+#endif
+
+#ifdef _brick2
+* loading brick geometry
+GEOBEGIN                             21.                              COMBNAME
+brick2pl.geo
+GEOEND
+#endif
+
+#ifdef _unzen
+* loading unzen geometry
+GEOBEGIN                             21.                              COMBNAME
+unzen.geo
+GEOEND
+#endif
+
+
+#ifdef _plate
+* setting up plate materials
+ASSIGNMA    EMULSION      Lead
+ASSIGNMA    EMULSION    Emul00    Emul01
+ASSIGNMA    EMULSION      Base
+#endif
+
+#ifdef _brick
+* setting up brick materials
+ASSIGNMA        LEAD      Lead
+ASSIGNMA    EMULSION    Emul00    Emul56
+ASSIGNMA    POLYSTYR      Base
+#endif
+
+#ifdef _brick4
+* setting up brick materials
+ASSIGNMA        LEAD      Lead
+ASSIGNMA    EMULSION    Emul00    Emul04
+ASSIGNMA    POLYSTYR      Base
+#endif
+
+#ifdef _brick2
+* setting up brick materials
+ASSIGNMA        LEAD      Lead
+ASSIGNMA    EMULSION    Emul00    Emul02
+ASSIGNMA    POLYSTYR      Base
+#endif
+
+#ifdef _unzen
+* setting up unzen materials
+ASSIGNMA    ALUMINUM      Lead
+ASSIGNMA    EMULSION    Emul00    Emul02
+ASSIGNMA    POLYSTYR      Base
+#endif
+
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+USERDUMP        100.                  0.        1.
+
+START        500000.                                      1.
+RANDOMIZ          1.   149282.
+
+USROCALL
+* ..+....1....+....2....+....3....+....4....+....5....+....6....+....7...
+STOP

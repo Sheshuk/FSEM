@@ -1,0 +1,57 @@
+*$ CREATE GC2FC.FOR
+*COPY GC2FC
+      subroutine G2F_INIT
+      INCLUDE '(MYSOURCE)'
+      
+      GC2FC(1)=7  !photon
+      GC2FC(2)=4  !e+
+      GC2FC(3)=3  !e-
+      GC2FC(4)=5  !neutrino
+      GC2FC(5)=10  !mu+
+      GC2FC(6)=11  !mu-
+      GC2FC(7)=23  !pi0
+      GC2FC(8)=13  !pi+
+      GC2FC(9)=14  !pi-
+      GC2FC(10)=12  !K0_L
+      GC2FC(11)=15  !K+
+      GC2FC(12)=16  !K-
+      GC2FC(13)=8  !neutron
+      GC2FC(14)=1  !proton
+      GC2FC(15)=2  !Aproton
+      GC2FC(16)=19  !K0_S
+      GC2FC(17)=0  !eta
+      GC2FC(18)=17  !lambda
+      GC2FC(19)=21  !sigma+
+      GC2FC(20)=22  !sigma0
+      GC2FC(21)=20  !sigma-
+      GC2FC(22)=34  !xi0
+      GC2FC(23)=36  !xi-
+      GC2FC(24)=38  !omega-
+      GC2FC(25)=9   !Aneutron
+      GC2FC(26)=18  !ALambda
+      GC2FC(27)=31  !ASigma-
+      GC2FC(28)=32  !ASigma0
+      GC2FC(29)=33  !ASigma+
+      GC2FC(30)=35  !Axi0
+      GC2FC(31)=37  !Axi+
+      GC2FC(32)=39  !Aomega+
+      GC2FC(33)=41  !tau+
+      GC2FC(34)=42  !tau-
+      GC2FC(35)=45  !D+
+      GC2FC(36)=46  !D-
+      GC2FC(37)=47  !D0
+      GC2FC(38)=48  !AD0
+      GC2FC(39)=49  !Ds+
+      GC2FC(40)=50  !ADs-
+      GC2FC(41)=51  !Lambda_c+
+      GC2FC(42)=0  !W+
+      GC2FC(43)=0  !W-
+      GC2FC(44)=0  !Z0
+      GC2FC(45)=-3    !deutron
+      GC2FC(46)=-4    !triton
+      GC2FC(47)=-6    !alpha
+      GC2FC(48)=0   !Geantino
+      GC2FC(49)=-5    !He3
+      return
+      end subroutine G2F_INIT
+*  +-------------------------------------------------------------------*
