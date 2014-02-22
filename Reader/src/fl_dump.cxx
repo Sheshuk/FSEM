@@ -20,10 +20,23 @@ long N0=1;
 long Ntot=-1;
 long M=1;
 
+void helpme(){
+  printf("fl_dump: Dump Fluka output to command line. A tool for reading FSEM FluSim.bin files\n");
+  printf(" Usage:  ./fl_dump FluSim.bin -v=VLEV -n=Ntot -n0=N0 -m=M\n");
+  printf("arguments:\n");
+  printf(" >      VLEV - verbose output level (debug)\n");
+  printf(" >      Ntot - number of events to process\n");
+  printf(" >      N0 - first event to process\n");
+  printf(" >      M - merge M events together\n");
+}
+
 int main(int argc, char** argv){
   FlRead::FlVerbose=0;  
   bool test=false;
+  if(argc<=1){helpme(); return 0;}
+
   for(int n=1; n<argc-1; ++n){
+    if(strncmp(argv[n],"-h",   2)==0){helpme(); return 0; }
     if(strncmp(argv[n],"-v=",  3)==0){FlRead::FlVerbose=atoi(argv[n]+3); continue;}
     if(strncmp(argv[n],"-n=",  3)==0){
       Ntot=ReadLong(argv[n]+3);
@@ -68,7 +81,7 @@ int main(int argc, char** argv){
       if(Nev==M){
         FlVtx::PrintAll(2);
         reader.ClearAll();
-	Nev=0;
+	      Nev=0;
       }
     }
     if(reader.fEvent%10000==0){printf("Evt #%d\n",reader.fEvent);      fflush(stdout);}

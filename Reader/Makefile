@@ -1,6 +1,10 @@
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs) -lEG -lGui
 
+# small fix for NetBeans IDE. Switch it off for usual build
+FEDRAROOT    :=/data/sw/fedra/trunk
+FSEM :=~/soft/FSEM
+#----------------------------------------------------------
 FEDRALIBS    := -L$(FEDRAROOT)/lib -lvt -lEmath -lEphys -lEdb -lEbase -lEdr -lEIO -lAlignment -lGeom -lEdd -lEMC -lDataConversion -lScan -lEMC
 
 TARGET1=$(FSEM)/app/bin/fl_read
@@ -21,24 +25,24 @@ FLIBS=$(LIBS)
 FLIBS+=$(FEDRALIBS)
 CC=g++
 
+%: %.o
+	$(CC) $(CFLAGS) -o $(TARGET1) $^ $(LIBS)
+	
 %.o: src/%.cxx
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $^
 
-all: fl_brick fl_ascii fl_dump
+all: fl_ascii fl_dump fl_brick
 
-flreader.o: FlData.o
-fl_ascii.o: FlData.o
-fl_brick.o: FlData.o src/fl_brick.cxx
-	$(CC) $(FFLAGS) -o $@ -c src/fl_brick.cxx
+# flreader.o: FlData.o`
+# fl_ascii.o: FlData.o
+
+fl_brick.o: FlData.o GeomReader.o
 
 fl_read: FlData.o flreader.o
-	$(CC) $(CFLAGS) -o $(TARGET1) FlData.o flreader.o $(LIBS)
 fl_ascii: FlData.o fl_ascii.o
-	$(CC) $(CFLAGS) -o $(TARGET2) FlData.o fl_ascii.o $(LIBS)
 fl_dump: FlData.o fl_dump.o
-	$(CC) $(CFLAGS) -o $(TARGET3) FlData.o fl_dump.o $(LIBS)
-fl_brick: FlData.o fl_brick.o
-	$(CC) $(FFLAGS) -o $(TARGET4) FlData.o fl_brick.o $(FLIBS)
+fl_brick: FlData.o fl_brick.o GeomReader.o
+
 clean:
 # 	$(MAKE) -C lib clean
 	rm -f ./*.o $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) core

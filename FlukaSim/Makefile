@@ -1,22 +1,30 @@
+FSim = FlukaSim
 TARGET=$(FSEM)/app/bin/FlukaSim
-
 FFF=$(FLUPRO)/flutil/fff
 LNK=$(FLUPRO)/flutil/lfluka
 FFLAGS= 
-FILES=$(shell ls $(FSEM)/$(FSim)/src/*.f)
+FILES= src/binout.f src/gc2fc.f src/mdstck.f src/mgdraw.f src/source.f src/stupre.f \
+src/stuprf.f src/usrein.f src/usreou.f src/usrini.f src/usrmed.f  src/usrout.f
 OBJ=$(FILES:.f=.o)
 
 %.o: %.f
-	$(echo "Compiling object file \"$@\"")
-	$(echo "====================================")
-	$(FFF) $(FFLAGS) $<
+	@echo "===================================="
+	@echo "Compiling object file \"$@\""
+	$(FFF) $(FFLAGS) $^
+	@if [ -e $@ ]; \
+	then \
+	echo "=============DONE===================";  \
+	else \
+	echo "=============FAILED=================";  \
+	fi;
 
-all:    $(OBJ)
+all: $(OBJ)
+	@echo "===================================="
+	@echo "Compiling file \"$@\""
+	@echo " --- $^"
 # 	echo "~~~~F $(FILES)"
-# 	echo "~~~~O $(OBJ)"
 # 	@for fle in $(FILES); do ((echo "FILE="$$fle)&& ($(FFF) $(FFLAGS) $$fle)); done;
-	
-	$(LNK) -o $(TARGET) -m fluka $(shell ls $(FSEM)/src/*.o)
+	$(LNK) -o $(TARGET) -m fluka $^
 	strip -s $(TARGET)
 
 clean:

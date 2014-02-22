@@ -10,7 +10,8 @@ helpme(){
   	echo "** usage ** : fsem INPUT_FILE OUTPUT_DIR BEAMFILE_DIR"
   	echo " - INPUT_FILE: FULKA input file (for example BRICK.inp)"
   	echo " - OPTPUT_DIR: Directory for output files"
-  	echo " - BEAMFILE_DIR: Directory with beamfiles (if specified in .inp)"
+  	echo " - MIN_ANG: Minimum angle (in mrad) for new track creation       <-- optional, def=0"
+  	echo " - BEAMFILE_DIR: Directory with beamfiles (if specified in .inp) <-- optional, def - pwd"
 }
 
 fullpath(){
@@ -28,13 +29,25 @@ echo "Starting FSEM run"
 
 #export FLU_OUT=$2
 export FLU_OUT=`fullpath $2`
-export BEAMFILES=`fullpath $3`
-export TXT_OUT=11100
+
+if [ "$#" -ge 3 ]; then
+   export MIN_ANG=$3
+else 
+   export MIN_ANG=0
+fi
+      
+if [ "$#" -ge 4 ]; then
+   export BEAMFILES=`fullpath $3`
+else 
+   export BEAMFILES=`pwd`
+fi
+export TXT_OUT=10000
+export BIN_OUT=11110
 
 echo "input file= `fullpath $1`"
 echo "output dir= $FLU_OUT"
 echo "beamfile dir= $BEAMFILES"
 
-$FLUPRO/flutil/rfluka -e $(fullpath $BRICKFLU_DIR)/brick.exe -M 1 `fullpath $1`
+$FLUPRO/flutil/rfluka -e $(fullpath $FSEM)/app/bin/FlukaSim -M 1 `fullpath $1`
 echo Done!
 

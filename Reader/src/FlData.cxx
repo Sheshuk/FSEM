@@ -1,10 +1,13 @@
 #include <cassert>
 #include <cmath>
+#include <cstdio>
+
+
 #include "FlData.h"
 
 long FlSeg::IDSEG=0;
- int FlTrk::IDTRK=0;
- int FlVtx::IDVTX=0;
+int FlTrk::IDTRK=0;
+int FlVtx::IDVTX=0;
 std::map <long,FlSeg*> FlSeg::Map;
 std::map <int, FlTrk*> FlTrk::Map;
 std::map <int, FlVtx*> FlVtx::Map;
@@ -15,6 +18,12 @@ int FlRead::FlVerbose;
 #define Log(vlev,...) if(vlev<=FlRead::FlVerbose){printf("\033[1;32m |%s <%s>\033[0m\t",std::string(vlev*2, '-').data(),__PRETTY_FUNCTION__);printf(__VA_ARGS__);}
 #define Err(vlev,...) if(vlev<=FlRead::FlVerbose){fprintf(stderr,"\033[1;31m<%s>\033[0m\t",__PRETTY_FUNCTION__);fprintf(stderr,__VA_ARGS__);}
 #define ERR(vlev) if(vlev<=FlRead::FlVerbose)fprintf(stderr,"\033[1;31m<%s>\033[0m\t",__PRETTY_FUNCTION__);if(vlev<=FlRead::FlVerbose)
+
+
+void record::print() {
+        printf("%d) #%d PID=%d par=%d ", desc, num, pid, par);
+        printf("P=%g T=(%g %g) [%g %g %g]\n", p, tx, ty, x, y, z);
+    };
 
 int CalcSegmSide(record *r0,record *r1){
   LOG(5)r0->print();
@@ -28,8 +37,8 @@ int CalcSegmSide(record *r0,record *r1){
   if(std::abs(r0->par-r1->par)>1)return -1;
   if(r0->desc==kEM1 && r1->desc==kEM0)return FlSeg::kMTK;
   if(r0->desc==kEM0 && r1->desc==kEM1)
-     return (r0->par!=r1->par)?(FlSeg::kPB):(FlSeg::kBTK);
-  return -1;
+   return (r0->par!=r1->par)?(FlSeg::kPB):(FlSeg::kBTK);
+ return -1;
 }
 int FLUKA2PDG(int code){
   //      To convert FLUKA particle code to PDG code
@@ -199,10 +208,10 @@ void FlTrk::PrintAll(int lev){
 ///----------------------------------------------------------------
 
 void FlTrk::Clear(){
-    vtx0=0; 
-    vtx1=0; 
-    segs.clear();
-    Log(4,"Trk#%d: Clear%d segs\n",id,N());
+  vtx0=0; 
+  vtx1=0; 
+  segs.clear();
+  Log(4,"Trk#%d: Clear%d segs\n",id,N());
 };
 ///----------------------------------------------------------------
 void FlTrk::Print(int lev){
@@ -235,23 +244,24 @@ void FlVtx::PrintAll(int lev){
   std::map<int, FlVtx*>::const_iterator itr;
   for(itr=FlVtx::Map.begin();itr!=Map.end();++itr)
   {
-    printf("VTX [%3d]: ",itr->first);
+    printf("VTX [%3d]:\n",itr->first);
     if(itr->second)itr->second->Print(lev);
     else printf(" NULL\n");
   }
 };
 ///----------------------------------------------------------------
 void FlVtx::Clear(){
-    Log(4,"VTX#d: Clear%d tracks\n",id,N());
-    tracks.clear();
+  Log(4,"VTX#%d: Clear%d tracks\n",id,N());
+  tracks.clear();
 };
 ///----------------------------------------------------------------
 void FlVtx::Print(int lev){
+  if(flag<0)return;
   printf("Vtx: id=%3d flag=%3d Ntrk_out=%ld\t",id,flag,tracks.size());
   printf("pos=[%6.1f %6.1f %6.1f]\n",x,y,z);
   if(lev==0)return;
   --lev;
-  if(trk_in){printf("IN:");trk_in->Print(lev);}
+  if(trk_in){printf("IN:");if(flag>0)trk_in->Print(lev);else printf("trk#%d\n",trk_in->id);}
   for(unsigned long n=0;n<tracks.size();++n){
     printf("%3ld)",n);tracks[n]->Print(lev);
 
@@ -306,13 +316,13 @@ int FlRead::Next(){
   fRec1.x*=1e4; fRec1.y*=1e4; fRec1.z*=1e4;
   LOG(5)fRec1.print();
   if(fRec1.desc==kEVT){
-      fRecE=fRec1;
-      Log(4,"Next event is #%d\n",fRecE.num);
-    }
+    fRecE=fRec1;
+    Log(4,"Next event is #%d\n",fRecE.num);
+  }
   if(fFile.eof()){
     Log(1,"EOF reached\n");
     return 0;
-    }
+  }
   Log(5,"Read record of size %d\n",h[0]);
   fRecSize=h[0]+8;
   fFilePos=fFile.tellg();
@@ -333,7 +343,7 @@ int FlRead::FindEvent(int NEv){
     if(fRecE.num>5000){
       f_EvSize=(fFilePos*1./(fRecSize*fRecE.num));
       Log(5,"Average event size = %10.2f records (based on %d events)\n",f_EvSize,fRecE.num);
-      }
+    }
     dEv=NEv-fRecE.num;
     ///"clever" finding
     if(std::fabs(dEv)>2000 && f_EvSize>0){
@@ -355,7 +365,7 @@ void FlRead::ClearSeg(){
     itr=FlSeg::Map.begin();
   //for(itr=FlSeg::Map.begin();itr!=FlSeg::Map.end();++itr){
     if(itr->second!=0)
-    delete (*itr).second;
+      delete (*itr).second;
     else FlSeg::Map.erase(itr->first);
   }
   FlVtx::Map.clear();
@@ -369,7 +379,7 @@ void FlRead::ClearTrx(){
     itr=FlTrk::Map.begin();
   //for(itr=FlTrk::Map.begin();itr!=FlTrk::Map.end();++itr){
     if(itr->second!=0)
-    delete (*itr).second;
+      delete (*itr).second;
     else FlTrk::Map.erase(itr->first);
   }
   FlTrk::Map.clear();
@@ -383,12 +393,19 @@ void FlRead::ClearVts(){
     itr=FlVtx::Map.begin();
   //for(itr=FlVtx::Map.begin();itr!=FlVtx::Map.end();++itr){
     if(itr->second!=0)
-    delete (*itr).second;
+      delete (*itr).second;
     else FlVtx::Map.erase(itr->first);
   }
   FlVtx::Map.clear();
 };
 ///----------------------------------------------------------------
+void FlRead::PrintEvt(){
+        printf("+++ File \"%s\": Event#%d pos=%2.1f%%\r", fFileName, fEvent, (fFilePos * 100.) / fFileLen);
+    }
+//----------------------------------------------------------------
+void FlRead::PrintStat(){
+        printf("%2ld Vts; %3ld Trx; %4ld Seg\n", FlVtx::Map.size(), FlTrk::Map.size(), FlSeg::Map.size());
+    }
 
 ///----------------------------------------------------------------
 int FlRead::ReadEvent(){
@@ -399,74 +416,66 @@ int FlRead::ReadEvent(){
   while(Next()){
     switch(fRec1.desc){
       case kEVT:
-	Log(2,"Finished reading event.\n"); 
-	return 1;
+          Log(2,"Finished reading event.\n"); 
+          return 1;
       case kIN:
-	if(fDoSaveVtx==false)continue;
-	Log(4,"Making VTX #%d\n",fRec1.num);
-	fTrkCur=FlTrk::Map[fRec1.num];
-	fVtxCur=new FlVtx(fTrkCur,fRec1);
-	break;
+          if(fDoSaveVtx==false)continue;
+          Log(4,"Making VTX #%d\n",fRec1.num);
+          fTrkCur=FlTrk::Map[fRec1.num];
+          fVtxCur=new FlVtx(fTrkCur,fRec1);
+          break;
       case kOUT:
-	if(fDoSaveTrx==false)continue;
-	if(FlVtx::Map.empty()){Log(2,"Create ZeroVtx!\n"); fVtxCur=new FlVtx(0,fRecE);}
-	fTrkCur=FlTrk::Map[fRec1.num];
-	///merge elastic scattering tracks e.t.c.
-// 	if(fTrkCur==0)
-	/*if((fVtxCur->flag==100 || fVtxCur->flag==103)&&(fVtxCur->trk_in->pdg==FLUKA2PDG(fRec1.pid))){
-	  fTrkCur=fVtxCur->trk_in;
-          Log(5,"Continue track#%d with track#%d\n",fTrkCur->id,fRec1.num);
-	  fTrkCur->id=fRec1.num;
-          FlTrk::Map[fRec1.num]
-          
-	  }*/
-	///--------------------------------------
-	if(fTrkCur==0){
-	  ///track is new
-	  Log(4,"Making TRK #%d\n",fRec1.num)
-	  fVtxCur->tracks.push_back(new FlTrk(fVtxCur,fRec1));
-	  //LOG(4)FlTrk::PrintAll();
-	}
-	else{
-	  ///track already exsists. False vertex. 
-	}
-	break;
-      case kEM0:
-      case kEM1: 
-         ///FIXME 
-         //if(fRec1.pid!=11)break;
-         ///dirty workaround for muon scattering study
-         
-         if(fTrkCur==0||fTrkCur->id!=fRec1.num)
-	    fTrkCur=FlTrk::Map[fRec1.num];
-	 
-	 if(fTrkCur==0){
-	   Err(2,"No track#%d!\n",fRec1.num);
-	   ERR(2)fRec1.print();
-	   ERR(2)FlTrk::PrintAll();
-	   break;
-	 }
-	 //fRec0=fTrkCur->fLastRec;
-	 int side=CalcSegmSide(&fRec1,&fRec0);
-	 Log(5,"Side=%d\n",side);
-	 Log(5,"DoSaveSeg[%d%d%d]\n",fDoSaveSeg[0],fDoSaveSeg[1],fDoSaveSeg[2]);
-	 if(side>=0 && fDoSaveSeg[side]){
-	   FlSeg* segm = new FlSeg(fTrkCur,fRec0,fRec1,side);
-  	   Log(4,"Making segment in trk#%d\n",fTrkCur->id);
-	   fTrkCur->segs.push_back(segm);
-	 }
-	 //fTrkCur->fLastRec=fRec1;
-	 fRec0=fRec1;
+          if(fDoSaveTrx==false)continue;
+          if(FlVtx::Map.empty()){Log(2,"Create ZeroVtx!\n"); fVtxCur=new FlVtx(0,fRecE);}
+          fTrkCur=FlTrk::Map[fRec1.num];
+
+    	///--------------------------------------
+          if(fTrkCur==0){
+        	  ///track is new
+            Log(4,"Making TRK #%d\n",fRec1.num)
+            fVtxCur->tracks.push_back(new FlTrk(fVtxCur,fRec1));
+        	  //LOG(4)FlTrk::PrintAll();
+          }else{
+      	  ///track already exsists. False vertex. 
+            fVtxCur->flag*=-1;
+          }
          break;
-    }
-    if(fFile.eof()){
-      Log(1,"EOF reached\n");
-      return 0;
-    }
-    
+       case kEM0:
+       case kEM1: 
+           ///FIXME 
+           //if(fRec1.pid!=11)break;
+           ///dirty workaround for muon scattering study
+           
+           if(fTrkCur==0||fTrkCur->id!=fRec1.num)
+             fTrkCur=FlTrk::Map[fRec1.num];
+
+           if(fTrkCur==0){
+            Err(2,"No track#%d!\n",fRec1.num);
+            ERR(2)fRec1.print();
+            ERR(2)FlTrk::PrintAll();
+            break;
+          }
+  	 //fRec0=fTrkCur->fLastRec;
+          int side=CalcSegmSide(&fRec1,&fRec0);
+          Log(5,"Side=%d\n",side);
+          Log(5,"DoSaveSeg[%d%d%d]\n",fDoSaveSeg[0],fDoSaveSeg[1],fDoSaveSeg[2]);
+          if(side>=0 && fDoSaveSeg[side]){
+            FlSeg* segm = new FlSeg(fTrkCur,fRec0,fRec1,side);
+            Log(4,"Making segment in trk#%d\n",fTrkCur->id);
+            fTrkCur->segs.push_back(segm);
+          }
+  	 //fTrkCur->fLastRec=fRec1;
+          fRec0=fRec1;
+        break;
+      }
+      if(fFile.eof()){
+        Log(1,"EOF reached\n");
+        return 0;
+      }
+
     ///read vertex:
-    
+
+    }
+    return 0;
   }
-  return 0;
-}
 ///----------------------------------------------------------------

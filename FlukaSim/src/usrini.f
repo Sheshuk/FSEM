@@ -34,7 +34,6 @@
       DIMENSION WHAT (6)
       CHARACTER SDUM*8
       CHARACTER PTH*250
-      CHARACTER MIN_ANG*8
 *
 *  Don't change the following line:
       LUSRIN = .TRUE.
@@ -50,15 +49,13 @@
        OUT_TXT(I)=(PTH(I:I).EQ."1")
       END DO
       CALL getenv('FLU_OUT',PTH)
-!      CALL getenv('MIN_ANG',MIN_ANG)
-            
+
       OPEN(28,FILE=PTH(1:LNBLNK(PTH))//'/FluSim.out',
      &              ACCESS='APPEND' )
-!      WRITE(28,*),'mrad = ',MIN_ANG
-!      READ (MIN_ANG, '(i10)') MRAD
-!      *MIN_COS=COS(MRAD*0.001);
 
-!      WRITE(28,'(A,F6.5)'),'Minimal kink angle=',MIN_COS
+      WRITE(28,*),'mrad = ',WHAT(1)
+      MIN_COS=COS(0.001*WHAT(1));
+      WRITE(28,'(A,F6.5)'),'Minimal kink angle cosine=',MIN_COS
       WRITE(28,*),'*=========== STARTING NEW RUN ==========='
       OPEN(30,FILE=PTH(1:LNBLNK(PTH))//'/FluTop.out',
      &              ACCESS='APPEND' )

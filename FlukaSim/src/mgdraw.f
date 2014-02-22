@@ -111,7 +111,8 @@
           WRITE(28,*) "TRAJECTORY FOR TRK#",LLOUSE," (",ISPUSR(2)
      #,") in reg=",MREG," np=",NTRACK
           DO 999 I=0,NTRACK,1
-999       WRITE(28,1111)I,SNGL (XTRACK(I)*1E4),YTRACK(I)*1E4,ZTRACK(I)*1E4
+999       WRITE(28,1111)I,SNGL 
+     #    (XTRACK(I)*1E4),YTRACK(I)*1E4,ZTRACK(I)*1E4
        ENDIF
        IF(OUT_BIN(5))THEN
         WRITE (101) INT2(MREG), INT(LLOUSE), INT(ISPUSR(2)),
@@ -256,8 +257,9 @@
       ENTRY USDRAW ( ICODE, MREG, XSCO, YSCO, ZSCO )
 
         
-        IF(OUT_TXT(2))
-     &    WRITE(28,*)"UsrDrw",ICODE,"NP=",NP,NP0,NPHEAV,"TRK=",JTRACK,ISPUSR(2)
+       IF(OUT_TXT(2))
+     &   WRITE(28,*)"UsrDrw",ICODE,"NP=",NP,NP0,NPHEAV,
+     &   "TRK=",JTRACK,ISPUSR(2)
         FLUSH(28)
         IF(ICODE/100.EQ.2)RETURN
         NTRK_VTX=NP
@@ -273,14 +275,13 @@
           LNEW=.TRUE.
           IF(I.EQ.NP.AND.ICODE.EQ.300)THEN
             LNEW=.FALSE.
-C          ELSE
-C            IF(KPART(I) .EQ. JTRACK) THEN
-C            COS_TH=(CXR(I)*CXTRCK+
-C     &              CYR(I)*CYTRCK+
-C     &              CZR(I)*CZTRCK)
-C             IF(COS_TH.GE.MIN_COS)LNEW=.FALSE.
-C             
-C            END IF
+          ELSE 
+            IF(KPART(I) .EQ. JTRACK) THEN
+            COS_TH=(CXR(I)*CXTRCK+
+     &              CYR(I)*CYTRCK+
+     &              CZR(I)*CZTRCK)
+             IF(COS_TH.GE.MIN_COS)LNEW=.FALSE.  
+           END IF
           END IF
 C          IF(((KPART(I).EQ.3).OR.(KPART(I).EQ.4.))
 C     &   .AND.PLR(I).LT.0.03)THEN
