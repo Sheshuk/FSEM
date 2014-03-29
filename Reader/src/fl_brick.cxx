@@ -90,9 +90,8 @@ EdbVertex* AddVtxToFedraTrk(FlVtx &iv, EdbTrackP *trk = 0) {
 ///------------------------------------------------------------------------
 
 void ProcessAllToFedra(TObjArray* vts) {
-    std::map <int, FlVtx*>::const_iterator itr = FlVtx::Map.begin();
-    for (; itr != FlVtx::Map.end(); ++itr) {
-        FlVtx *Vtx = itr->second;
+    for(auto&& itr : FlVtx::Map) {
+        FlVtx* Vtx = itr.second;
         EdbVertex* fVtx = AddVtxToFedraTrk(*Vtx, 0);
         vts->Add(fVtx);
         for (int nt = 0; nt < Vtx->N(); ++nt) {
@@ -100,9 +99,7 @@ void ProcessAllToFedra(TObjArray* vts) {
             EdbTrackP* fTrk = AddTrkToFVtx(*Trk, fVtx);
             for (int ns = 0; ns < Trk->N(); ++ns) {
                 FlSeg* Seg = Trk->GetSegment(ns);
-                //EdbSegP* fSeg=
                 AddSegToFTrk(*Seg, fTrk);
-//                _Log(0,"Added seg #%d",fTrk->N());
             }
         }
     }
@@ -193,7 +190,7 @@ int main(int argc, char** argv) {
 //    reader.SetSaveBits(63);
     if (reader.FindEvent(N0) == false)return 1;
     while (reader.ReadEvent()) {
-        if (reader.fEvent >= N0) {
+        if (reader.Event() >= N0) {
             Nev++;
             if (Nev % 1000 == 0) {
                 reader.PrintEvt();
@@ -204,7 +201,7 @@ int main(int argc, char** argv) {
             reader.ClearAll();
             gVertices->Clear("C");
         }
-        if (reader.fEvent > N0 + Ntot)break;
+        if (reader.Event() > N0 + Ntot)break;
     }
     //   reader.PrintStat();
     //   FlVtx::PrintAll(2);

@@ -77,11 +77,11 @@ public:
     void Print(int lev = 0);
     void AddSegment(FlSeg*);
 
-    int N() {
+    int N() const{
         return segs.size();
     }
 
-    FlSeg* GetSegment(int n) {
+    FlSeg* GetSegment(int n) const{
         return segs[n];
     }
 public:
@@ -106,11 +106,11 @@ public:
     void Print(int lev = 0);
     void AddTrack(FlTrk*);
 
-    int N() {
+    int N() const{
         return tracks.size();
     }
 
-    FlTrk* GetTrack(int n) {
+    FlTrk* GetTrack(int n) const {
         return tracks[n];
     }
 public:
@@ -152,21 +152,21 @@ public:
     void Close();
     int Next();
 
+//getters
+    unsigned Event() const {return fEvent;}
+    float Energy() const {return fE0;}
 public:
     bool fDoSaveVtx;
     bool fDoSaveTrx;
     bool fDoSaveSeg[FlSeg::k__Tot];
 
-    void SetSaveBits(char vtbel) {
-        fDoSaveSeg[FlSeg::kPB ] = vtbel & 1;
-        fDoSaveSeg[FlSeg::kMTK] = vtbel & 2;
-        fDoSaveSeg[FlSeg::kBTK] = vtbel & 4;
-        fDoSaveTrx = vtbel & 8;
-        fDoSaveVtx = vtbel & 16;
-    }
-
+    void SetSaveBits(const char* options);
+public:
+    static int FlVerbose;
+    static FILE* outfile;
+private:
     ///reading file
-    int fEvent;
+    unsigned fEvent;
     float fE0;
     char* fFileName;
     long fFilePos;
@@ -183,6 +183,5 @@ public:
     FlTrk *fTrkCur;
     FlVtx *fVtxCur;
 
-    static int FlVerbose;
 };
 #endif

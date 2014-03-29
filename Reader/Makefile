@@ -1,49 +1,69 @@
-ROOTCFLAGS   := $(shell root-config --cflags)
-ROOTLIBS     := $(shell root-config --libs) -lEG -lGui
+ROOTCFLAGS   = $(shell root-config --cflags)
+ROOTLIBS     = $(shell root-config --libs) -lEG -lGui
 
 # small fix for NetBeans IDE. Switch it off for usual build
-FEDRAROOT    :=/data/sw/fedra/trunk
-FSEM :=~/soft/FSEM
+# FEDRAROOT    :=/data/sw/fedra/trunk
+# FSEM :=~/soft/FSEM
 #----------------------------------------------------------
-FEDRALIBS    := -L$(FEDRAROOT)/lib -lvt -lEmath -lEphys -lEdb -lEbase -lEdr -lEIO -lAlignment -lGeom -lEdd -lEMC -lDataConversion -lScan -lEMC
 
-TARGET1=$(FSEM)/app/bin/fl_read
-TARGET2=$(FSEM)/app/bin/fl_ascii
-TARGET3=$(FSEM)/app/bin/fl_dump
-TARGET4=$(FSEM)/app/bin/fl_brick
+FEDRALIBS    = -L$(FEDRAROOT)/lib -lvt -lEmath -lEphys -lEdb -lEbase -lEdr -lEIO -lAlignment -lGeom -lEdd -lEMC -lDataConversion -lScan -lEMC
+
+BINDIR=../app/bin
+#$(FSEM)/app/bin
+TARGET1=$(BINDIR)/fl_read
+TARGET2=$(BINDIR)/fl_ascii
+TARGET3=$(BINDIR)/fl_dump
+TARGET4=$(BINDIR)/fl_brick
 
 
-CFLAGS=-O3 -D_FILE_OFFSET_BITS=64 -g 
-CFLAGS+=-I include -Wall $(ROOTCFLAGS)
-CFLAGS+=-I$(ROOTSYS)/include 
-
-FFLAGS=-I$(FEDRAROOT)/include $(CFLAGS)
+CFLAGS=-O3 -D_FILE_OFFSET_BITS=64 
+CFLAGS+=-I include -Wall -fPIC -std=c++0x
+RFLAGS=-I$(ROOTSYS)/include  $(ROOTCFLAGS)
+FFLAGS=-I$(FEDRAROOT)/include
 
 #-g -g0 -fPIC -pthread -DDEBUG -ggdb
-LIBS=$(ROOTLIBS)
-FLIBS=$(LIBS)
-FLIBS+=$(FEDRALIBS)
+LIBS=
+FLIBS= $(ROOTLIBS) $(FEDRALIBS)
 CC=g++
 
 %: %.o
-	$(CC) $(CFLAGS) -o $(TARGET1) $^ $(LIBS)
+	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 	
 %.o: src/%.cxx
 	$(CC) $(CFLAGS) -o $@ -c $^
 
-all: fl_ascii fl_dump fl_brick
+%.a:
+	ar rvs $@ $^
 
-# flreader.o: FlData.o`
+%.so:
+	$(CC) -shared -o $@ $^
+
+# rules:
+all: fl_fedra_raw fl_dump
+#fl_ascii fl_dump fl_brick
+
+libs: lib_fsem.a lib_fsem.so
+
+lib_fsem.a: FlData.o
+
+lib_fsem.so: FlData.o
+# flreader.o: FlData.o
 # fl_ascii.o: FlData.o
 
-fl_brick.o: FlData.o GeomReader.o
-
+fl_fedra_raw: FlData.o FlReaderApp.o
 fl_read: FlData.o flreader.o
 fl_ascii: FlData.o fl_ascii.o
-fl_dump: FlData.o fl_dump.o
+fl_dump: FlData.o FlReaderApp.o
+
+# CFLAGS+=$(RFLAGS) $(FFLAGS)
+GeomReader.o: src/GeomReader.cxx
+	$(CC) $(CFLAGS) -o $@ -c $^ 
+# fl_brick.o: FlData.o GeomReader.o 
+
+# LIBS+=$(FLIBS)
 fl_brick: FlData.o fl_brick.o GeomReader.o
 
 clean:
 # 	$(MAKE) -C lib clean
-	rm -f ./*.o $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) core
+	rm -f ./*.o $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) core lib_fsem.*
 	

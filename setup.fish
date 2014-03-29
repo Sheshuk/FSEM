@@ -9,7 +9,7 @@ set -x PATH $PATH $FSEM/app
 
 set -x FLUPRO /data/sw/fluka
 set -x FLUFOR gfortran
-set -x GFORFLU gfortran-4.7
+set -x GFORFLU gfortran
 #set -x BRICKFLU_DIR $PWD/
 
 # set path to beamfiles from OpNegn:

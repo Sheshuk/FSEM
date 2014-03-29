@@ -1,3 +1,4 @@
+
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -13,16 +14,19 @@ std::map <int, FlTrk*> FlTrk::Map;
 std::map <int, FlVtx*> FlVtx::Map;
 
 int FlRead::FlVerbose;
+FILE* FlRead::outfile=stdout;
 
 #define LOG(vlev) if(vlev<=FlRead::FlVerbose)printf("\033[1;32m |%s <%s>\033[0m\t",std::string(vlev*2, '-').data(),__PRETTY_FUNCTION__);if(vlev<=FlRead::FlVerbose)
 #define Log(vlev,...) if(vlev<=FlRead::FlVerbose){printf("\033[1;32m |%s <%s>\033[0m\t",std::string(vlev*2, '-').data(),__PRETTY_FUNCTION__);printf(__VA_ARGS__);}
 #define Err(vlev,...) if(vlev<=FlRead::FlVerbose){fprintf(stderr,"\033[1;31m<%s>\033[0m\t",__PRETTY_FUNCTION__);fprintf(stderr,__VA_ARGS__);}
 #define ERR(vlev) if(vlev<=FlRead::FlVerbose)fprintf(stderr,"\033[1;31m<%s>\033[0m\t",__PRETTY_FUNCTION__);if(vlev<=FlRead::FlVerbose)
 
+//FlData printing to file
+#define Fprintf(...) fprintf(FlRead::outfile,__VA_ARGS__)
 
 void record::print() {
-        printf("%d) #%d PID=%d par=%d ", desc, num, pid, par);
-        printf("P=%g T=(%g %g) [%g %g %g]\n", p, tx, ty, x, y, z);
+        Fprintf("%d) #%d PID=%d par=%d ", desc, num, pid, par);
+        Fprintf("P=%g T=(%g %g) [%g %g %g]\n", p, tx, ty, x, y, z);
     };
 
 int CalcSegmSide(record *r0,record *r1){
@@ -116,7 +120,7 @@ int FLUKA2PDG(int code){
     case 62: return -4332;
     case 63: return -1;
     default  : {
-      printf("What's #%i in FLUKA?\n",code);
+      Fprintf("What's #%i in FLUKA?\n",code);
       return -1;
     }
   }
@@ -164,17 +168,17 @@ FlSeg::~FlSeg(){
 void FlSeg::Clear(){trk=0;};
 ///----------------------------------------------------------------
 void FlSeg::Print(int lev){
-  printf("seg#%3ld pdg=%5d trk#%4d; Plt#%d side_%d, dz=%4.1f\t",id,pdg,trk_id,plate,side,dz);
-  printf("pos=%6.1f %6.1f %6.1f [%5.4f %5.4f] P=%4.4f k=%g\n",x,y,z,tx,ty,p,kink*1e3);
+  Fprintf("seg#%3ld pdg=%5d trk#%4d; Plt#%d side_%d, dz=%4.1f\t",id,pdg,trk_id,plate,side,dz);
+  Fprintf("pos=%6.1f %6.1f %6.1f [%5.4f %5.4f] P=%4.4f k=%g\n",x,y,z,tx,ty,p,kink*1e3);
 };
 ///----------------------------------------------------------------
 void FlSeg::PrintAll(int lev){
-  printf("--------------%3ld Segments-----------------------\n",FlSeg::Map.size());
+  Fprintf("--------------%3ld Segments-----------------------\n",FlSeg::Map.size());
   std::map<long, FlSeg*>::const_iterator itr;
-  for(itr=Map.begin();itr!=Map.end();++itr){
-    printf("SEG [%3ld]: ",itr->first);
-    if(itr->second)itr->second->Print(lev);
-    else printf(" NULL\n");
+  for(auto && itr: Map){
+    Fprintf("SEG [%3ld]: ",itr.first);
+    if(itr.second)itr.second->Print(lev);
+    else Fprintf(" NULL\n");
   }
 };
 ///----------------------------------------------------------------
@@ -197,12 +201,12 @@ FlTrk::~FlTrk(){
 }
 ///----------------------------------------------------------------
 void FlTrk::PrintAll(int lev){
-  printf("--------------%3ld TRACKS-----------------------\n",FlTrk::Map.size());
+  Fprintf("--------------%3ld TRACKS-----------------------\n",FlTrk::Map.size());
   std::map<int, FlTrk*>::const_iterator itr;
   for(itr=Map.begin();itr!=Map.end();++itr){
-    printf("TRK [%3d]: ",itr->first);
+    Fprintf("TRK [%3d]: ",itr->first);
     if(itr->second)itr->second->Print(lev);
-    else printf(" NULL\n");
+    else Fprintf(" NULL\n");
   }
 };
 ///----------------------------------------------------------------
@@ -215,12 +219,13 @@ void FlTrk::Clear(){
 };
 ///----------------------------------------------------------------
 void FlTrk::Print(int lev){
-  printf("trk#%3d pdg=%5d Ns=%ld\t",id,pdg,segs.size());
-  printf("pos=[%6.1f %6.1f %6.1f] tt=[%5.4f %5.4f] P=%4.4f\n",x,y,z,tx,ty,p);
+  Fprintf("trk#%3d pdg=%5d\t",id,pdg);
+  Fprintf("NS=%d\t",N());
+  Fprintf("pos=[%6.1f %6.1f %6.1f] tt=[%5.4f %5.4f] P=%4.4f\n",x,y,z,tx,ty,p);
   if(lev==0)return;
   --lev;
-  for(unsigned long n=0;n<segs.size();++n){
-    printf("-- %3ld)",n);segs[n]->Print(lev);
+  for(auto&& seg: segs){
+    seg->Print(lev);
   }  
 };
 ///----------------------------------------------------------------
@@ -240,13 +245,12 @@ FlVtx::~FlVtx(){
 }
 ///----------------------------------------------------------------
 void FlVtx::PrintAll(int lev){
-  printf("--------------%3ld VERTICES-----------------------\n",FlVtx::Map.size());
-  std::map<int, FlVtx*>::const_iterator itr;
-  for(itr=FlVtx::Map.begin();itr!=Map.end();++itr)
+  Fprintf("--------------%3ld VERTICES-----------------------\n",Map.size());
+  for(auto&& itr: Map)
   {
-    printf("VTX [%3d]:\n",itr->first);
-    if(itr->second)itr->second->Print(lev);
-    else printf(" NULL\n");
+    Fprintf("VTX [%3d]:\n",itr.first);
+    if(itr.second)itr.second->Print(lev);
+    else Fprintf(" NULL\n");
   }
 };
 ///----------------------------------------------------------------
@@ -257,13 +261,13 @@ void FlVtx::Clear(){
 ///----------------------------------------------------------------
 void FlVtx::Print(int lev){
   if(flag<0)return;
-  printf("Vtx: id=%3d flag=%3d Ntrk_out=%ld\t",id,flag,tracks.size());
-  printf("pos=[%6.1f %6.1f %6.1f]\n",x,y,z);
+  Fprintf("Vtx: id=%3d flag=%3d Ntrk_out=%ld\t",id,flag,tracks.size());
+  Fprintf("pos=[%6.1f %6.1f %6.1f]\n",x,y,z);
   if(lev==0)return;
   --lev;
-  if(trk_in){printf("IN:");if(flag>0)trk_in->Print(lev);else printf("trk#%d\n",trk_in->id);}
+  if(trk_in){Fprintf("IN:");if(flag>0)trk_in->Print(lev);else Fprintf("trk#%d\n",trk_in->id);}
   for(unsigned long n=0;n<tracks.size();++n){
-    printf("%3ld)",n);tracks[n]->Print(lev);
+    Fprintf("%3ld)",n);tracks[n]->Print(lev);
 
   }
 }
@@ -275,7 +279,7 @@ FlRead::FlRead():fDoSaveVtx(true),fDoSaveTrx(true),fFileName(0){
   fDoSaveSeg[FlSeg::kMTK]=0;
   fDoSaveSeg[FlSeg::kPB]=0;
   f_EvSize=-1;
-  printf("Verbose=%d\n",FlRead::FlVerbose);
+  // Fprintf("Verbose=%d\n",FlRead::FlVerbose);
   Log(1,"New FlRead\n");
 };
 ///----------------------------------------------------------------
@@ -359,53 +363,69 @@ int FlRead::FindEvent(int NEv){
 }
 ///----------------------------------------------------------------
 void FlRead::ClearSeg(){
-  std::map<long, FlSeg*>::const_iterator itr;
   Log(3,"Killing %ld segments\n",FlSeg::Map.size());
-  while(FlSeg::Map.empty()==false){
-    itr=FlSeg::Map.begin();
-  //for(itr=FlSeg::Map.begin();itr!=FlSeg::Map.end();++itr){
-    if(itr->second!=0)
-      delete (*itr).second;
-    else FlSeg::Map.erase(itr->first);
+  for(auto&& itr : FlSeg::Map) {
+      if(itr.second!=0)delete itr.second;
+      itr.second=0;
   }
-  FlVtx::Map.clear();
+  FlSeg::Map.clear();
 };
 ///----------------------------------------------------------------
 void FlRead::ClearTrx(){
-  std::map<int, FlTrk*>::const_iterator itr;
+
   Log(3,"Killing %ld tracks\n",FlTrk::Map.size());
-  //FlTrk::PrintAll();
-  while(FlTrk::Map.empty()==false){
-    itr=FlTrk::Map.begin();
-  //for(itr=FlTrk::Map.begin();itr!=FlTrk::Map.end();++itr){
-    if(itr->second!=0)
-      delete (*itr).second;
-    else FlTrk::Map.erase(itr->first);
+  for(auto&& itr : FlTrk::Map) {
+      if(itr.second!=0)delete itr.second;
+      itr.second=0;
   }
   FlTrk::Map.clear();
-  
 };
 ///----------------------------------------------------------------
 void FlRead::ClearVts(){
   Log(3,"Killing %ld vertices\n",FlVtx::Map.size());
-  std::map<int, FlVtx*>::const_iterator itr;
-  while(FlVtx::Map.empty()==false){
-    itr=FlVtx::Map.begin();
-  //for(itr=FlVtx::Map.begin();itr!=FlVtx::Map.end();++itr){
-    if(itr->second!=0)
-      delete (*itr).second;
-    else FlVtx::Map.erase(itr->first);
+  for(auto&& itr : FlVtx::Map) {
+      if(itr.second!=0)delete itr.second;
+      itr.second=0;
   }
   FlVtx::Map.clear();
 };
 ///----------------------------------------------------------------
 void FlRead::PrintEvt(){
-        printf("+++ File \"%s\": Event#%d pos=%2.1f%%\r", fFileName, fEvent, (fFilePos * 100.) / fFileLen);
+        Fprintf("+++ File \"%s\": Event#%d pos=%2.1f%%\r", fFileName, fEvent, (fFilePos * 100.) / fFileLen);
     }
 //----------------------------------------------------------------
 void FlRead::PrintStat(){
-        printf("%2ld Vts; %3ld Trx; %4ld Seg\n", FlVtx::Map.size(), FlTrk::Map.size(), FlSeg::Map.size());
+        Fprintf("%2ld Vts; %3ld Trx; %4ld Seg\n", FlVtx::Map.size(), FlTrk::Map.size(), FlSeg::Map.size());
     }
+//------------------------------------------------------
+void FlRead::SetSaveBits(const char* options){
+    ///allowed options: 
+    // LMBTV
+    fDoSaveSeg[FlSeg::kPB ] = false;
+    fDoSaveSeg[FlSeg::kMTK] = false;
+    fDoSaveSeg[FlSeg::kBTK] = false;
+    fDoSaveTrx = false;
+    fDoSaveVtx = false;
+    for(auto&& c : std::string(options)) {
+        switch (c){
+        case 'L': case 'l':
+            fDoSaveSeg[FlSeg::kPB ] = true;
+            break;
+        case 'M': case 'm':
+            fDoSaveSeg[FlSeg::kMTK ] = true;
+            break;
+        case 'B': case 'b':
+            fDoSaveSeg[FlSeg::kBTK ] = true;
+            break;
+        case 'T': case 't':
+            fDoSaveTrx = true;
+            break;
+        case 'V': case 'v':
+            fDoSaveVtx = true;
+            break;
+        }
+    }
+}
 
 ///----------------------------------------------------------------
 int FlRead::ReadEvent(){
