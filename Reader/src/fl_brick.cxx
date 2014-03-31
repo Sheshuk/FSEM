@@ -24,7 +24,6 @@ const float heavyMass[7] = {0, 0, 5, 1.9, 2.8, 2.8, 3.7};
 
 
 ///-----------------------------------------------------------------------
-
 EdbSegP* AddSegToFTrk(FlSeg &iseg, EdbTrackP* otrk) {
     _Log(3, "Adding segment:\n");
     _LogCmd(3, iseg.Print());
@@ -159,17 +158,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     /// done reading arguments
-
-    reader.fDoSaveSeg[FlSeg::kBTK] = 0;
-    reader.fDoSaveSeg[FlSeg::kMTK] = 1;
-    reader.fDoSaveSeg[FlSeg::kPB] = 0;
-    reader.fDoSaveTrx = 1;
-    reader.fDoSaveVtx = 1;
-    char* ifname = argv[argc - 2];
-    char* ofname = argv[argc - 1];
-    printf("Input file = \'%s\'\n", ifname);
-    printf("Output file = \'%s\'\n", ofname);
-    //   printf("Verbose=%d\n",FlRead::FlVerbose);
+    reader.SetSaveBits("mtv");
     if (reader.Open(ifname) == 0) {
         printf("ERROR opening file %s\n", ifname);
         return 1;

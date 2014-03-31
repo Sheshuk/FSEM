@@ -29,10 +29,11 @@ void FlReaderApp::HelpMe(){
 void FlReaderApp::ReadArgs(int argc, char** argv){
   if(argc<=1){HelpMe(); Exit();}
   char c;
-  while ((c = getopt (argc, argv, "hn:N:M:v::")) != -1)
+  while ((c = getopt (argc, argv, "han:N:M:v::")) != -1)
    switch (c)
      {
       case 'h': HelpMe(); Exit(); return;
+      case 'a': fAppend=true; break;
       case 'v': fVerbose=optarg? atoi(optarg):1; break;
       case 'n': fNtotal=ReadLong(optarg); break;
       case 'N': fNstart=ReadLong(optarg); break;
@@ -41,7 +42,7 @@ void FlReaderApp::ReadArgs(int argc, char** argv){
      }
      if(optind<argc) fInFile=argv[optind]; optind++;
      if(optind<argc)fOutFile=argv[optind]; optind++;
-     printf("InFile= %s, OutFile= %s\n",fInFile,fOutFile);
+     printf("InFile= %s, OutFile= %s (%s)\n",fInFile,fOutFile,fAppend?"append":"owerwrite");
      printf("Process events [%ld - %ld] merging %ld events together. Verbose=%d\n",fNstart,fNstart+fNtotal,fMerge,fVerbose);
   }
 
@@ -86,6 +87,7 @@ void FlReaderApp::Start(){
 //------------------------------------------------------
 void FlReaderApp::Stop(){
   fRunning=false;
+  printf("+++ Stop! +++\n");
 }
 
 //------------------------------------------------------

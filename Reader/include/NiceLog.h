@@ -45,6 +45,7 @@
 	#define _Info(vlev, ...) 	if(vlev<=_NiceVlev){printf("|%s",__sepLine(vlev));_YEL("(info):\t");_Yel(__VA_ARGS__);}
 	#define _Err(vlev, ...) 	if(vlev<=_NiceVlev){fprintf(stderr,"\033[1;31m<%s>\033[0m\t",__PRETTY_FUNCTION__);fprintf(stderr,__VA_ARGS__);}
 	#define _ErrF(vlev,...) 	if(vlev<=_NiceVlev){fprintf(stderr,"line %d in \"%s\"\033[1;31m<%s>\033[0m\t",__LINE__,__FILE__,__FUNCTION__);fprintf(stderr,__VA_ARGS__);}
+	#define _ErrCmd(vlev, cmd)  if(vlev<=_NiceVlev){fprintf(stderr,"\033[1;31m<%s>\033[0m\t",__PRETTY_FUNCTION__);cmd;}
 #else 
 	#define _LogThis(vlev)     ;
 	#define _LogCmd(vlev, cmd) ;
@@ -52,6 +53,7 @@
 	#define _Info(vlev, ...)   ;
 	#define _Err(vlev, ...)    ;
 	#define _ErrF(vlev,...)    ;
+	#define _ErrCmd(vlev, cmd) ;
 #endif
 
 #endif // NICE_LOG_H

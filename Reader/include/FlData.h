@@ -49,6 +49,7 @@ public:
     static void PrintAll(int lev = 0);
 public:
     FlSeg(FlTrk* t, record r1, record r2, int Side);
+    FlSeg();
     ~FlSeg();
     void Clear();
     void Print(int lev = 0);
@@ -59,8 +60,8 @@ public:
     float p, tx, ty;
     float kink, eloss;
     int trk_id;
-    FlTrk* trk;
     char plate, side;
+    FlTrk* trk;
 };
 ///------------------------------------------------------------
 
@@ -153,8 +154,9 @@ public:
     int Next();
 
 //getters
-    unsigned Event() const {return fEvent;}
-    float Energy() const {return fE0;}
+    unsigned Event() const {return fEvtNum;}
+    float Energy() const {return fEvtEnergy;}
+    int  PDG() const {return fEvtPdg;}
 public:
     bool fDoSaveVtx;
     bool fDoSaveTrx;
@@ -165,9 +167,12 @@ public:
     static int FlVerbose;
     static FILE* outfile;
 private:
+    //event information
+    unsigned fEvtNum;
+    float fEvtEnergy;
+    int fEvtPdg;
+    
     ///reading file
-    unsigned fEvent;
-    float fE0;
     char* fFileName;
     long fFilePos;
     long fFileLen;
