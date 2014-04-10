@@ -32,6 +32,7 @@ class FlReaderApp
     unsigned fVerbose =0;
     char* fInFile =0;
     char* fOutFile =0;
+    char* fGeoFile =0;
     bool fAppend=false;
     bool fRunning=false;
 };

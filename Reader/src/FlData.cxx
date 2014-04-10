@@ -168,7 +168,7 @@ FlSeg::~FlSeg(){
 ///----------------------------------------------------------------
 void FlSeg::Clear(){trk=0;};
 ///----------------------------------------------------------------
-void FlSeg::Print(int lev){
+void FlSeg::Print(int lev) const {
   Fprintf("seg#%3ld pdg=%5d trk#%4d; Plt#%d side_%d, dz=%4.1f\t",id,pdg,trk_id,plate,side,dz);
   Fprintf("pos=%6.1f %6.1f %6.1f [%5.4f %5.4f] P=%4.4f k=%g\n",x,y,z,tx,ty,p,kink*1e3);
 };
@@ -219,7 +219,7 @@ void FlTrk::Clear(){
   _Log(4,"Trk#%d: Clear%d segs\n",id,N());
 };
 ///----------------------------------------------------------------
-void FlTrk::Print(int lev){
+void FlTrk::Print(int lev) const {
   Fprintf("trk#%3d pdg=%5d\t",id,pdg);
   Fprintf("NS=%d\t",N());
   Fprintf("pos=[%6.1f %6.1f %6.1f] tt=[%5.4f %5.4f] P=%4.4f\n",x,y,z,tx,ty,p);
@@ -259,8 +259,8 @@ void FlVtx::Clear(){
   tracks.clear();
 };
 ///----------------------------------------------------------------
-void FlVtx::Print(int lev){
-  if(flag<0)return;
+void FlVtx::Print(int lev) const {
+  // if(flag<0)return;
   Fprintf("Vtx: id=%3d flag=%3d Ntrk_out=%ld\t",id,flag,tracks.size());
   Fprintf("pos=[%6.1f %6.1f %6.1f]\n",x,y,z);
   if(lev==0)return;
@@ -399,7 +399,7 @@ void FlRead::ClearVts(){
 };
 ///----------------------------------------------------------------
 void FlRead::PrintEvt(){
-        Fprintf("+++ File \"%s\": Event#%d pos=%2.1f%%\r", fFileName, fEvtNum, (fFilePos * 100.) / fFileLen);
+        Fprintf("+++ File \"%s\": Event#%d pos=%2.1f%%\n", fFileName, fEvtNum, (fFilePos * 100.) / fFileLen);
     }
 //----------------------------------------------------------------
 void FlRead::PrintStat(){
@@ -470,11 +470,7 @@ int FlRead::ReadEvent(){
           }
          break;
        case kEM0:
-       case kEM1: 
-           ///FIXME 
-           //if(fRec1.pid!=11)break;
-           ///dirty workaround for muon scattering study
-           
+       case kEM1:  
            if(fTrkCur==0||fTrkCur->id!=fRec1.num)
              fTrkCur=FlTrk::Map[fRec1.num];
 

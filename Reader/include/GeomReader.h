@@ -16,7 +16,8 @@ private:
 public:
     GeomReader();
     GeomReader(const GeomReader& orig);
-    EdbBrickP* Brick(){return &eBrick;}
+    const EdbBrickP* Brick()const {return &eBrick;}
+    void SetBrick(EdbBrickP* b){eBrick=*b;}
     bool ReadGeoFile(char* geofile);
     void FindSide(EdbSegP* s);
     virtual ~GeomReader();

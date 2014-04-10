@@ -1,30 +1,91 @@
 #include <cstdlib>
 #include "FlData.h"
+#include "FlReaderApp.h"
+#include "GeomReader.h"
+
+///root includes
 #include "TFile.h"
 #include "TH1.h"
 #include "TTree.h"
 #include "TVector3.h"
 #include "TDatabasePDG.h"
 
+//fedra includes
 #include "EdbVertex.h"
 #include "EdbPattern.h"
 #include "EdbSegP.h"
-#include "GeomReader.h"
 #include "EdbBrick.h"
+
+
 #include "NiceLog.h"
+#include <vector>
 
-#define _NiceVlev FVLEV
-int FVLEV = 0;
-TDatabasePDG gBD;
+class FlBrickApp: public FlReaderApp{
+public:
+    virtual void Init();
+    virtual void Finish();
+    virtual void ProcessEvent();
+    //printing
+    virtual void HelpMe();
 
-TObjArray *gVertices;
-GeomReader Geometry;
+private:
+    EdbSegP*   AddSegToFTrk(const FlSeg &iseg, EdbTrackP* otrk);
+    EdbTrackP* AddTrkToFVtx(const FlTrk &it, EdbVertex* ov = 0);
+    EdbVertex* AddVtxToFTrk(const FlVtx &iv, EdbTrackP* trk = 0);
+    void ClearFedra();
+
+    TDatabasePDG PdgDB;
+    TFile * OutFile = 0;
+    TTree * OutTree = 0;
+    TObjArray  *Vertices;
+    TObjArray  Tracks;
+    TObjArray  Segments;
+    GeomReader Geometry;
+
+
+};
+
+#define _NiceVlev fVerbose
 
 const float heavyMass[7] = {0, 0, 5, 1.9, 2.8, 2.8, 3.7};
 
-
 ///-----------------------------------------------------------------------
-EdbSegP* AddSegToFTrk(FlSeg &iseg, EdbTrackP* otrk) {
+void FlBrickApp::Init(){
+    FlReaderApp::Init();
+    fReader.SetSaveBits("mvt");
+    Vertices=new TObjArray();
+    OutFile=new TFile(fOutFile,fAppend?"UPDATE":"RECREATE");
+    OutFile->cd();
+    if(fGeoFile){
+        //read geometry from file
+        Geometry.ReadGeoFile(fGeoFile);
+        Geometry.Brick()->Write("Brick",TObject::kOverwrite);  
+    }
+    if(fAppend){
+        if(fGeoFile==0)Geometry.SetBrick((EdbBrickP*)OutFile->Get("Brick"));
+        OutTree=(TTree*)OutFile->Get("FluSim");
+        OutTree->SetBranchAddress("Vtx",&Vertices);
+    }else{
+        OutTree=new TTree("FluSim", "FFSEM to FEDRA");
+        OutTree->Branch("Vtx", "TObjArray", &Vertices, 128000, 0);
+        OutTree->Write("FluSim",TObject::kOverwrite);
+    }
+  }
+///-----------------------------------------------------------------------
+void FlBrickApp::Finish(){
+    FlReaderApp::Finish();
+    OutTree->Write("FluSim",TObject::kOverwrite);
+    OutFile->Close();
+    delete Vertices;
+  }
+///-----------------------------------------------------------------------
+void FlBrickApp::HelpMe(){
+        printf("This is FlukaBrick application:\n");
+        printf("convert FLUKA output to FEDRA vertices tree\n");
+        FlReaderApp::HelpMe();
+    }
+///-----------------------------------------------------------------------
+EdbSegP* FlBrickApp::AddSegToFTrk(const FlSeg &iseg, EdbTrackP* otrk) {
     _Log(3, "Adding segment:\n");
     _LogCmd(3, iseg.Print());
     EdbSegP* oseg = new EdbSegP(iseg.id, iseg.x, iseg.y, iseg.tx, iseg.ty, 22, iseg.pdg);
@@ -40,13 +101,14 @@ EdbSegP* AddSegToFTrk(FlSeg &iseg, EdbTrackP* otrk) {
     otrk->AddSegment(oseg);
     _Log(3, "Created segment:\n");
     _LogCmd(3, oseg->PrintNice());
+    Segments.Add(oseg);
     return oseg;
 }
 
 
 ///-----------------------------------------------------------------------
 
-EdbTrackP* AddTrkToFVtx(FlTrk &it, EdbVertex *ov = 0) {
+EdbTrackP* FlBrickApp::AddTrkToFVtx(const FlTrk &it, EdbVertex *ov) {
     _Log(3, "Adding track:\n");
     _LogCmd(3, it.Print());
     EdbTrackP* ot = new EdbTrackP;
@@ -60,7 +122,7 @@ EdbTrackP* AddTrkToFVtx(FlTrk &it, EdbVertex *ov = 0) {
     ot->SetTY(it.ty);
     ot->SetMC(1, it.id);
     ot->SetTrack(it.id);
-    ot->SetM((it.pdg > 9990) ? heavyMass[ot->PDG() - 9990] : gBD.GetParticle(ot->PDG())->Mass());
+    ot->SetM((it.pdg > 9990) ? heavyMass[ot->PDG() - 9990] : PdgDB.GetParticle(ot->PDG())->Mass());
     if (ov) {
         ///attach it as track end point
         EdbVTA* vta = new EdbVTA(ot, ov);
@@ -68,11 +130,12 @@ EdbTrackP* AddTrkToFVtx(FlTrk &it, EdbVertex *ov = 0) {
         vta->SetFlag(2);
         vta->AddVandT();
     }
+    Tracks.Add(ot);
     return ot;
 }
 ///------------------------------------------------------------------------
 
-EdbVertex* AddVtxToFedraTrk(FlVtx &iv, EdbTrackP *trk = 0) {
+EdbVertex* FlBrickApp::AddVtxToFTrk(const FlVtx &iv, EdbTrackP *trk) {
     EdbVertex* v = new EdbVertex;
     v->SetXYZ(iv.x, iv.y, iv.z);
     v->SetID(iv.id);
@@ -88,116 +151,36 @@ EdbVertex* AddVtxToFedraTrk(FlVtx &iv, EdbTrackP *trk = 0) {
 }
 ///------------------------------------------------------------------------
 
-void ProcessAllToFedra(TObjArray* vts) {
-    for(auto&& itr : FlVtx::Map) {
-        FlVtx* Vtx = itr.second;
-        EdbVertex* fVtx = AddVtxToFedraTrk(*Vtx, 0);
-        vts->Add(fVtx);
-        for (int nt = 0; nt < Vtx->N(); ++nt) {
-            FlTrk* Trk = Vtx->GetTrack(nt);
+void FlBrickApp::ProcessEvent() {
+    for(auto&& itr_v : FlVtx::Map) {
+        FlVtx* Vtx = itr_v.second;
+        if(Vtx->N()==0)continue;
+        EdbVertex* fVtx = AddVtxToFTrk(*Vtx, 0);
+        Vertices->Add(fVtx);
+        for (auto&& Trk : Vtx->tracks) {
+            if(Trk->N()==0)continue;
             EdbTrackP* fTrk = AddTrkToFVtx(*Trk, fVtx);
-            for (int ns = 0; ns < Trk->N(); ++ns) {
-                FlSeg* Seg = Trk->GetSegment(ns);
+            for (auto&& Seg : Trk->segs)
                 AddSegToFTrk(*Seg, fTrk);
-            }
         }
     }
+    OutTree->Fill();
+    ClearFedra();
+}
+///------------------------------------------------------------------------
+void FlBrickApp::ClearFedra(){
+    Vertices->Clear("C");
+    Tracks.Clear("C");
+    Segments.Clear("C");
 }
 ///------------------------------------------------------------------------
 
 
-FlRead reader;
-
-long ReadLong(char* str) {
-    char* endp;
-    long n = strtol(str, &endp, 10);
-    if (endp[0] == 'k')n *= 1000;
-    if (endp[0] == 'm')n *= 1000000;
-    if (endp[0] == 'g')n *= 1000000000;
-    return n;
-}
-
-long N0 = 1;
-long Ntot = -1;
-
-void helpme() {
-    printf("fl_brick - convert from FSEM simulated data to FEDRA vertices\n");
-}
-///-------------------------------------------------------------------------------
-
-int main(int argc, char** argv) {
-    FlRead::FlVerbose = 0;
-    char* geofile=0;
-    /// read arguments:
-    try {
-        if (argc < 2){throw 0;}
-        for (int n = 1; n < argc - 2; ++n) {
-            if (strncmp(argv[n], "-v=", 3) == 0) {
-                FlRead::FlVerbose = atoi(argv[n] + 3);
-                continue;
-            } else if (strncmp(argv[n], "-n=", 3) == 0) {
-                Ntot = ReadLong(argv[n] + 3);
-                printf("Ntot=%ld\n", Ntot);
-                continue;
-            } else if (strncmp(argv[n], "-g=", 3) == 0) {
-                geofile=argv[n]+3;
-                continue;
-            } else if (strncmp(argv[n], "-n0=", 4) == 0) {
-                N0 = ReadLong(argv[n] + 4);
-                printf("N0=%ld\n", N0);
-                continue;
-            }
-            else throw n;
-        }
-    } catch(int ner){
-        if(ner==0){
-            helpme();
-            return 1;
-        }
-        printf("Error in argument #%d = \'%s\'\n Now exit",ner,argv[ner]);
-        return 1;
-    }
-    /// done reading arguments
-    reader.SetSaveBits("mtv");
-    if (reader.Open(ifname) == 0) {
-        printf("ERROR opening file %s\n", ifname);
-        return 1;
-    }
-
-    gVertices = new TObjArray;
-    
-
-    TFile outf(ofname, "RECREATE");
-    outf.cd();
-    Geometry.ReadGeoFile(geofile);
-    if(geofile) Geometry.Brick()->Write("Brick",TObject::kOverwrite);
-    TTree* tri = new TTree("FluSim", "FlukaSIM output");
-    tri->Branch("Vtx", "TObjArray", &gVertices, 128000, 0);
-    tri->Write("FluSim", TObject::kOverwrite);
-
-    long Nev = 0;
-//    reader.SetSaveBits(63);
-    if (reader.FindEvent(N0) == false)return 1;
-    while (reader.ReadEvent()) {
-        if (reader.Event() >= N0) {
-            Nev++;
-            if (Nev % 1000 == 0) {
-                reader.PrintEvt();
-                Nev = 0;
-            }
-            ProcessAllToFedra(gVertices);
-            tri->Fill();
-            reader.ClearAll();
-            gVertices->Clear("C");
-        }
-        if (reader.Event() > N0 + Ntot)break;
-    }
-    //   reader.PrintStat();
-    //   FlVtx::PrintAll(2);
-    //   reader.ClearAll();
-    tri->Write("FluSim", TObject::kOverwrite);
-    reader.Close();
-
-    outf.Close();
-    return 0;
+int main(int argc, char **argv)
+{
+    printf("hello!\n");
+  FlBrickApp app;
+  app.ReadArgs(argc,argv);
+  app.Run();
+  return 0;
 }

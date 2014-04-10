@@ -29,7 +29,7 @@ void FlReaderApp::HelpMe(){
 void FlReaderApp::ReadArgs(int argc, char** argv){
   if(argc<=1){HelpMe(); Exit();}
   char c;
-  while ((c = getopt (argc, argv, "han:N:M:v::")) != -1)
+  while ((c = getopt (argc, argv, "han:N:M:g:v::")) != -1)
    switch (c)
      {
       case 'h': HelpMe(); Exit(); return;
@@ -38,12 +38,13 @@ void FlReaderApp::ReadArgs(int argc, char** argv){
       case 'n': fNtotal=ReadLong(optarg); break;
       case 'N': fNstart=ReadLong(optarg); break;
       case 'M': fMerge =ReadLong(optarg); break;
+      case 'g': fGeoFile=optarg; break;
       case '?': Exit();
      }
      if(optind<argc) fInFile=argv[optind]; optind++;
      if(optind<argc)fOutFile=argv[optind]; optind++;
      printf("InFile= %s, OutFile= %s (%s)\n",fInFile,fOutFile,fAppend?"append":"owerwrite");
-     printf("Process events [%ld - %ld] merging %ld events together. Verbose=%d\n",fNstart,fNstart+fNtotal,fMerge,fVerbose);
+     printf("Process events [%ld - %ld] merging %ld events together. Verbose=%d\n",fNstart,fNstart+fNtotal-1,fMerge,fVerbose);
   }
 
 //------------------------------------------------------
@@ -61,6 +62,7 @@ void FlReaderApp::Run(){
   Init();
   if(fRunning==false)Finish();
   unsigned long Nev=0;
+  if(fNstart<1)fNstart=1;
   if(fReader.FindEvent(fNstart)==false) throw "Event #Nstart not found";
   //---------  main loop: ----------------
   while(IsRunning()){
@@ -73,7 +75,7 @@ void FlReaderApp::Run(){
         Nev=0;
       }
     if(fReader.Event()%10000==0){printf("Evt #%d\n",fReader.Event());fflush(stdout);}
-    if(fReader.Event()>=fNstart+fNtotal)Stop(); 
+    if(fReader.Event()>=fNstart+fNtotal-1)Stop(); 
     }
     else Stop();
   }

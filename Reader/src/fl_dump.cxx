@@ -13,6 +13,8 @@ class FlDumpApp: public FlReaderApp{
       FlRead::outfile=stdout;
     }
     virtual void ProcessEvent(){
+      fReader.PrintEvt();
+      fReader.PrintStat();
       FlVtx::PrintAll();
     }
     //printing

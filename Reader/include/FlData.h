@@ -52,7 +52,7 @@ public:
     FlSeg();
     ~FlSeg();
     void Clear();
-    void Print(int lev = 0);
+    void Print(int lev = 0) const;
 public:
     long id;
     int pdg;
@@ -75,7 +75,7 @@ public:
     FlTrk(FlVtx* v, record r);
     ~FlTrk();
     void Clear();
-    void Print(int lev = 0);
+    void Print(int lev = 0) const;
     void AddSegment(FlSeg*);
 
     int N() const{
@@ -104,7 +104,7 @@ public:
     FlVtx(FlTrk* t, record r);
     ~FlVtx();
     void Clear();
-    void Print(int lev = 0);
+    void Print(int lev = 0) const;
     void AddTrack(FlTrk*);
 
     int N() const{

@@ -18,11 +18,14 @@ TARGET4=$(BINDIR)/fl_brick
 
 CFLAGS=-O3 -D_FILE_OFFSET_BITS=64 
 CFLAGS+=-I include -Wall -fPIC -std=c++0x
+LIBS=
+
 RFLAGS=-I$(ROOTSYS)/include  $(ROOTCFLAGS)
 FFLAGS=-I$(FEDRAROOT)/include
 
+CFLAGS+=$(RFLAGS) $(FFLAGS)
 #-g -g0 -fPIC -pthread -DDEBUG -ggdb
-LIBS=
+LIBS+=$(RLIBS) $(FLIBS)
 CC=g++
 
 %: %.o
@@ -38,7 +41,7 @@ CC=g++
 	$(CC) -shared -o $@ $^
 
 # rules:
-all: fl_simple fl_dump
+all: fl_brick fl_simple fl_dump
 #fl_ascii fl_dump fl_brick
 
 libs: lib_fsem.a lib_fsem.so
@@ -53,14 +56,15 @@ fl_simple: FlData.o FlReaderApp.o
 fl_read: FlData.o flreader.o
 fl_ascii: FlData.o fl_ascii.o
 fl_dump: FlData.o FlReaderApp.o
+fl_brick: FlData.o FlReaderApp.o GeomReader.o
 
-CFLAGS+=$(RFLAGS) $(FFLAGS)
+
 GeomReader.o: src/GeomReader.cxx
 	$(CC) $(CFLAGS) -o $@ -c $^ 
 # fl_brick.o: FlData.o GeomReader.o 
 
-LIBS+=$(RLIBS)
-fl_brick: FlData.o fl_brick.o GeomReader.o
+
+# fl_brick: FlData.o fl_brick.o GeomReader.o
 
 clean:
 # 	$(MAKE) -C lib clean

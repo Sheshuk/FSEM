@@ -3,7 +3,7 @@
 #include "FlData.h"
 #include "FlReaderApp.h"
 
-
+//------------------------------------------------------
 class FlToSimple: public FlReaderApp{
     virtual void Init();
     virtual void Finish();
@@ -21,9 +21,10 @@ class FlToSimple: public FlReaderApp{
         int Pdg;
     } Evt;
 };
-
+//------------------------------------------------------
 void FlToSimple::Init(){
     FlReaderApp::Init();
+    fReader.SetSaveBits("mblvt");
     OutFile=new TFile(fOutFile,fAppend?"UPDATE":"RECREATE");
     OutFile->cd();
     if(fAppend){
@@ -37,12 +38,13 @@ void FlToSimple::Init(){
     }
     OutTree->Write("Fluka_sim",TObject::kOverwrite);
   }
-
+//------------------------------------------------------
 void FlToSimple::Finish(){
     FlReaderApp::Finish();
     OutTree->Write("Fluka_sim",TObject::kOverwrite);
     OutFile->Close();
   }
+//------------------------------------------------------
 void FlToSimple::ProcessEvent(){
     Evt.Num=fReader.Event();
     Evt.Energy=fReader.Energy();
@@ -54,6 +56,7 @@ void FlToSimple::ProcessEvent(){
     }
     // fReader.PrintStat();
   }
+//------------------------------------------------------
 int main(int argc, char **argv)
 {
   FlToSimple app;
