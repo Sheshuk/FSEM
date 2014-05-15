@@ -177,7 +177,7 @@ private:
     long fFilePos;
     long fFileLen;
     int fRecSize;
-    //event size estimation
+    //estimationvent size estimation
     float f_EvSize;
     std::ifstream fFile;
     ///records

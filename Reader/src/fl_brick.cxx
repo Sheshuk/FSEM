@@ -41,8 +41,6 @@ private:
     TObjArray  Tracks;
     TObjArray  Segments;
     GeomReader Geometry;
-
-
 };
 
 #define _NiceVlev fVerbose

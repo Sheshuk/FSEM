@@ -48,6 +48,10 @@ echo "input file= `fullpath $1`"
 echo "output dir= $FLU_OUT"
 echo "beamfile dir= $BEAMFILES"
 
-$FLUPRO/flutil/rfluka -e $(fullpath $FSEM)/app/bin/FlukaSim -M 1 `fullpath $1`
+$FLUPRO/flutil/rfluka -e $(fullpath $FSEM)/app/bin/FlukaSim -M 1 `fullpath $1` &
+sleep 3
+watchme="tail -n 3 $FLU_OUT/FluSim.out"
+echo "watch this! "$watchme
+watch -d $watchme
 echo Done!
 
