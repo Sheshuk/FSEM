@@ -25,8 +25,8 @@ if [ "$#" -lt 2 ]; then
 	exit
 fi
 
-echo "Starting FSEM run"
-
+echo "Starting FSEM run [$1 ; $2]"
+echo `fullpath $2`
 #export FLU_OUT=$2
 export FLU_OUT=`fullpath $2`
 
@@ -44,11 +44,38 @@ fi
 export TXT_OUT=10000
 export BIN_OUT=11110
 
-echo "input file= `fullpath $1`"
+INPFILE=`fullpath $1`
+THISDIF=$PWD
+echo "input file= $INPFILE"
 echo "output dir= $FLU_OUT"
 echo "beamfile dir= $BEAMFILES"
-
-$FLUPRO/flutil/rfluka -e $(fullpath $FSEM)/app/bin/FlukaSim -M 1 `fullpath $1` &
+#check if directory exists
+if [ ! -d "$FLU_OUT" ]; then
+  read -r -p "The directory $FLU_OUT doesn't exist. Do you want to create it? [y/N]" response
+    if [[ $response =~ ^([yY])$ ]]
+    then
+        echo "Create dir $FLU_OUT"
+        mkdir $FLU_OUT
+    else
+        echo "Aborting..."
+        exit
+    fi
+fi
+#check if directory is empty
+if test "$(ls -A "$FLU_OUT")"; then
+  read -r -p "The directory $FLU_OUT is not empty. Do you want to clear it? [y/N]" response
+    if [[ $response =~ ^([yY])$ ]]
+    then
+        echo "Clearing $FLU_OUT"
+        rm -rf $FLU_OUT/*
+    else
+        echo "Leave it as it is..."
+    fi
+fi
+#cd $FLU_OUT; 
+$FLUPRO/flutil/rfluka -e $(fullpath $FSEM)/app/bin/FlukaSim -M 1 $INPFILE &
+cp $INPFILE $FLU_OUT 
+#cd $THISDIR
 sleep 3
 watchme="tail -n 3 $FLU_OUT/FluSim.out"
 echo "watch this! "$watchme

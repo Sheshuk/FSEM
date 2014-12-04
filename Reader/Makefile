@@ -29,6 +29,7 @@ LIBS+=$(RLIBS) $(FLIBS)
 CC=g++
 
 %: %.o
+	#compiling app: $@
 	$(CC) $(CFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 	
 %.o: src/%.cxx
@@ -41,7 +42,7 @@ CC=g++
 	$(CC) -shared -o $@ $^
 
 # rules:
-all: fl_brick fl_simple fl_dump
+all: fl_mcs fl_brick fl_simple fl_dump
 #fl_ascii fl_dump fl_brick
 
 libs: lib_fsem.a lib_fsem.so
@@ -52,6 +53,7 @@ lib_fsem.so: FlData.o
 # flreader.o: FlData.o
 # fl_ascii.o: FlData.o
 
+fl_mcs: FlData.o FlReaderApp.o
 fl_simple: FlData.o FlReaderApp.o
 fl_read: FlData.o flreader.o
 fl_ascii: FlData.o fl_ascii.o

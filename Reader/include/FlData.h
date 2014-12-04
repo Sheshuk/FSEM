@@ -14,6 +14,10 @@ enum {
     kEM1,
     kNO
 };
+namespace FlMethods{
+    float CalcKinkSquared(float tx1,float ty1,float tx2,float ty2);
+    float CalcKink(float tx1,float ty1,float tx2,float ty2);
+}
 
 ///binary record:
 #pragma pack(push, 1)
@@ -78,7 +82,7 @@ public:
     void Print(int lev = 0) const;
     void AddSegment(FlSeg*);
 
-    int N() const{
+    unsigned int N() const{
         return segs.size();
     }
 
@@ -107,7 +111,7 @@ public:
     void Print(int lev = 0) const;
     void AddTrack(FlTrk*);
 
-    int N() const{
+    unsigned int N() const{
         return tracks.size();
     }
 

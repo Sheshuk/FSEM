@@ -72,11 +72,11 @@ void GeomReader::FindSide(EdbSegP* s){
         printf("plt#%d->z=%f, seg->z=%f => dz=%f\n",plt->ID(),plt->Z(),s->Z(),s->Z()-plt->Z());
         //throw s;
     }
-    if(s->Z()<=plt->Z()-plt->GetLayer(0)->Zmin()){
+    if(s->Z()<=plt->Z()+plt->GetLayer(0)->Zmin()){
         ///top
         s->SetSide(1); 
         ///propagate microtrack to the base surface
-        s->PropagateTo(plt->Z()-plt->GetLayer(0)->Zmin());
+        s->PropagateTo(plt->Z()+plt->GetLayer(0)->Zmin());
     }else 
     if(s->Z()>=plt->Z()+plt->GetLayer(0)->Zmax()){
         ///bottom

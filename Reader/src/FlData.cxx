@@ -22,6 +22,20 @@ FILE* FlRead::outfile=stdout;
 //FlData printing to file
 #define Fprintf(...) fprintf(FlRead::outfile,__VA_ARGS__)
 
+float FlMethods::CalcKinkSquared(float tx1,float ty1,float tx2,float ty2){
+  double r1m =tx1*tx1+ty1*ty1+1.0;
+  double r2m =tx2*tx2+ty2*ty2+1.0;
+  double r1r2=tx1*tx2+ty1*ty2+1.0;
+  return 1-r1r2*r1r2/(r1m*r2m);
+}
+
+float FlMethods::CalcKink(float tx1,float ty1,float tx2,float ty2){
+  double r1m =tx1*tx1+ty1*ty1+1.0;
+  double r2m =tx2*tx2+ty2*ty2+1.0;
+  double r1r2=tx1*tx2+ty1*ty2+1.0;
+  return sqrt(1-r1r2*r1r2/(r1m*r2m));
+}
+
 void record::print() {
         Fprintf("%d) #%d PID=%d par=%d ", desc, num, pid, par);
         Fprintf("P=%g T=(%g %g) [%g %g %g]\n", p, tx, ty, x, y, z);
@@ -139,10 +153,7 @@ FlSeg::FlSeg(FlTrk* t,record r1, record r2, int Side):id(++IDSEG),side(Side){
   plate=r1.par;
   
   if(r2.p>r1.p){record rt=r2; r2=r1; r1=rt;}
-  double r1m =r1.tx*r1.tx+r1.ty*r1.ty+1.0;
-  double r2m =r2.tx*r2.tx+r2.ty*r2.ty+1.0;
-  double r1r2=r1.tx*r2.tx+r1.ty*r2.ty+1.0;
-  kink=sqrt(1-r1r2*r1r2/(r1m*r2m));
+  kink=FlMethods::CalcKink(r1.tx,r1.ty,r2.tx,r2.ty);
   dz=r2.z-r1.z;
   tx=(r2.x-r1.x)/dz;
   ty=(r2.y-r1.y)/dz;
