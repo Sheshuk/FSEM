@@ -24,7 +24,7 @@ RFLAGS=-I$(ROOTSYS)/include  $(ROOTCFLAGS)
 FFLAGS=-I$(FEDRAROOT)/include
 
 CFLAGS+=$(RFLAGS) $(FFLAGS)
-#-g -g0 -fPIC -pthread -DDEBUG -ggdb
+CFLAGS+=-g -g0 -fPIC -pthread -DDEBUG -ggdb
 LIBS+=$(RLIBS) $(FLIBS)
 CC=g++
 
@@ -47,9 +47,9 @@ all: fl_mcs fl_brick fl_simple fl_dump
 
 libs: lib_fsem.a lib_fsem.so
 
-lib_fsem.a: FlData.o
+lib_fsem.a: FlData.o FlReaderApp.o
 
-lib_fsem.so: FlData.o
+lib_fsem.so: FlData.o FlReaderApp.o
 # flreader.o: FlData.o
 # fl_ascii.o: FlData.o
 

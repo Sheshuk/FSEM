@@ -3,6 +3,7 @@
 
 
 #include <fstream>
+#include <cmath>
 #include <vector>
 #include <map>
 ///read status:
@@ -14,10 +15,6 @@ enum {
     kEM1,
     kNO
 };
-namespace FlMethods{
-    float CalcKinkSquared(float tx1,float ty1,float tx2,float ty2);
-    float CalcKink(float tx1,float ty1,float tx2,float ty2);
-}
 
 ///binary record:
 #pragma pack(push, 1)
@@ -76,7 +73,7 @@ public:
     static void PrintAll(int lev = 0);
 
 public:
-    FlTrk(FlVtx* v, record r);
+    FlTrk(FlVtx* v, const record &r);
     ~FlTrk();
     void Clear();
     void Print(int lev = 0) const;
@@ -85,7 +82,9 @@ public:
     unsigned int N() const{
         return segs.size();
     }
-
+    float Slope(){return sqrt(tx*tx+ty*ty);}
+    FlSeg* SegFirst() const{ return segs.front();}
+    FlSeg* SegLast () const{ return segs.back ();}
     FlSeg* GetSegment(int n) const{
         return segs[n];
     }
@@ -105,7 +104,7 @@ public:
     static std::map <int, FlVtx*> Map;
     static void PrintAll(int lev = 1);
 public:
-    FlVtx(FlTrk* t, record r);
+    FlVtx(FlTrk* t, const record &r);
     ~FlVtx();
     void Clear();
     void Print(int lev = 0) const;
@@ -126,6 +125,12 @@ public:
     std::vector<FlTrk*> tracks;
 };
 
+namespace FlMethods{
+    float CalcKinkSquared(float tx1,float ty1,float tx2,float ty2);
+    float CalcKink(float tx1,float ty1,float tx2,float ty2);
+    float CalcIP(FlSeg* s1, FlSeg* s2);
+    float CalcIP(FlVtx*  v, FlSeg* s);
+}
 
 ///------------------------------------------------------------
 

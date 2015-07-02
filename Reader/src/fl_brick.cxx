@@ -2,6 +2,7 @@
 #include "FlData.h"
 #include "FlReaderApp.h"
 #include "GeomReader.h"
+#include "EmulsionEmulator.h"
 
 ///root includes
 #include "TFile.h"
@@ -41,6 +42,7 @@ private:
     TObjArray  Tracks;
     TObjArray  Segments;
     GeomReader Geometry;
+    EmulsionEmulator Emul;
 };
 
 #define _NiceVlev fVerbose
@@ -50,6 +52,7 @@ const float heavyMass[7] = {0, 0, 5, 1.9, 2.8, 2.8, 3.7};
 ///-----------------------------------------------------------------------
 void FlBrickApp::Init(){
     FlReaderApp::Init();
+    Emul.gevPerGrain=1e-6;
     fReader.SetSaveBits("mvt");
     Vertices=new TObjArray();
     OutFile=new TFile(fOutFile,fAppend?"UPDATE":"RECREATE");
@@ -86,7 +89,8 @@ void FlBrickApp::HelpMe(){
 EdbSegP* FlBrickApp::AddSegToFTrk(const FlSeg &iseg, EdbTrackP* otrk) {
     _Log(3, "Adding segment:\n");
     _LogCmd(3, iseg.Print());
-    EdbSegP* oseg = new EdbSegP(iseg.id, iseg.x, iseg.y, iseg.tx, iseg.ty, 22, iseg.pdg);
+    int PulseHight=Emul.GeneratePulse(iseg);
+    EdbSegP* oseg = new EdbSegP(iseg.id, iseg.x, iseg.y, iseg.tx, iseg.ty, PulseHight, iseg.pdg);
     oseg->SetZ(iseg.z);
     oseg->SetDZ(iseg.dz);
     oseg->SetP(iseg.p);

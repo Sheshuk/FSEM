@@ -360,9 +360,9 @@
       PTH=
      &      pth1(1:LNBLNK(pth1))//'/'//
      &      SDUSOU(1:LNBLNK(SDUSOU))//'.muflux'
+        WRITE(28,*)"* OPEN FILE",PTH
         INQUIRE(UNIT=45,OPENED= LOPND)
       IF(LOPND.EQV..FALSE.) THEN
-        WRITE(28,*)"* OPEN FILE",PTH
         OPEN(45,FILE=PTH,ACCESS='SEQUENTIAL',ERR=111)
         INQUIRE(UNIT=45,OPENED= LOPND)
         NEV_CURR=0
@@ -380,16 +380,19 @@
 *        GOTO 6020
 *      END IF
       
-      READ(45,*,END=100)EMU,MM(1),MM(2),MM(3)
-      MM(1)=EMU*MM(1);
-      MM(2)=EMU*MM(2);
-      MM(3)=EMU*MM(3);
+      ! READ(45,*,END=100)EMU,MM(1),MM(2),MM(3)
+      READ(45,*,END=100)TX,TY,EMU
+      MM(3)=EMU/SQRT(TX*TX+TY*TY+1)
+      MM(1)=TX*MM(3);
+      MM(2)=TY*MM(3);
 
 ***   randomly chose direction and side
       WRITE(28,*)MM(1),MM(2),MM(3);      
-      IF(FLRNDM().GT.0.5)THEN
+      IF(TY.GT.0)THEN
         !WRITE(28,*)"|<---- direction",WHASOU(3);
         MM(3)=-MM(3);
+        MM(2)=-MM(2);
+        MM(1)=-MM(1);
         PS0(3)=WHASOU(3);
       ELSE 
         !WRITE(28,*)"---->| direction",WHASOU(2);
